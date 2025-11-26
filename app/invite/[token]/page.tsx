@@ -370,16 +370,23 @@ export default function InvitePage() {
                             </>
                         )}
                         <div>
-                            <label className="block mb-1">
-                                Photo (optionnel, recommandé)
-                            </label>
+                            <label className="block mb-1 font-medium">Photo (optionnel)</label>
+
+                            <button
+                                type="button"
+                                onClick={() => document.getElementById("photo-input")?.click()}
+                                className="border rounded-md px-3 py-2 text-sm font-medium w-full text-left"
+                            >
+                                {photoFile ? "Changer la photo" : "Choisir ou prendre une photo"}
+                            </button>
+
                             <input
+                                id="photo-input"
                                 type="file"
                                 accept="image/*"
-                                capture="user"
                                 onChange={(e) => {
                                     const file = e.target.files?.[0] || null;
-                                    setPhotoFile(file || null);
+                                    setPhotoFile(file);
                                     if (file) {
                                         const url = URL.createObjectURL(file);
                                         setPhotoPreview(url);
@@ -387,24 +394,21 @@ export default function InvitePage() {
                                         setPhotoPreview(null);
                                     }
                                 }}
-                                className="w-full text-xs"
+                                className="hidden"
                             />
-                            <p className="text-xs text-gray-600 mt-1">
-                                Tu peux prendre une photo avec ton téléphone ou en choisir une
-                                existante. Elle sera visible uniquement par les participants de
-                                cet événement.
-                            </p>
+
                             {photoPreview && (
-                                <div className="mt-2">
+                                <div className="mt-3">
                                     <p className="text-xs mb-1">Aperçu :</p>
                                     <img
                                         src={photoPreview}
                                         alt="Aperçu photo"
-                                        className="w-24 h-24 object-cover rounded-full border"
+                                        className="w-28 h-28 rounded-full object-cover border"
                                     />
                                 </div>
                             )}
                         </div>
+
 
                         <button
                             type="submit"
