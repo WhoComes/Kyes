@@ -115,7 +115,7 @@ export default function EventInvitesPage() {
       if (invalid.length > 0) {
         setMessage(
           "Certains contacts ne ressemblent pas à des emails : " +
-            invalid.join(", ")
+          invalid.join(", ")
         );
         return;
       }
@@ -126,7 +126,7 @@ export default function EventInvitesPage() {
       if (invalid.length > 0) {
         setMessage(
           "Certains numéros ne semblent pas au format international (+33...) : " +
-            invalid.join(", ")
+          invalid.join(", ")
         );
         return;
       }
@@ -177,7 +177,7 @@ export default function EventInvitesPage() {
         setMessage("Invitations ajoutées et emails envoyés ✅");
       } else if (channel === "sms") {
         // Envoi des SMS via Twilio
-        await fetch("/api/send-invites-sms", {
+        const res = await fetch("/api/send-invites-sms", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -195,8 +195,20 @@ export default function EventInvitesPage() {
             },
           }),
         });
-        setMessage("Invitations ajoutées et SMS envoyés ✅");
+
+        const body = await res.json();
+
+        if (!res.ok) {
+          console.error("Erreur SMS:", body);
+          setMessage(
+            body.error ||
+            "Invitations ajoutées, mais erreur lors de l'envoi des SMS."
+          );
+        } else {
+          setMessage("Invitations ajoutées et SMS envoyés ✅");
+        }
       }
+
     } catch (e) {
       console.error(e);
       setMessage(
@@ -315,8 +327,8 @@ export default function EventInvitesPage() {
               {saving
                 ? "Ajout en cours..."
                 : channel === "email"
-                ? "Ajouter et envoyer les emails"
-                : "Ajouter et envoyer les SMS"}
+                  ? "Ajouter et envoyer les emails"
+                  : "Ajouter et envoyer les SMS"}
             </button>
           </form>
           {message && <p className="text-sm mt-2">{message}</p>}
@@ -344,8 +356,8 @@ export default function EventInvitesPage() {
                     {inv.status === "pending"
                       ? "En attente"
                       : inv.status === "accepted"
-                      ? "Acceptée"
-                      : "Refusée"}
+                        ? "Acceptée"
+                        : "Refusée"}
                   </span>
                   <span className="text-xs">
                     Ajoutée le :{" "}
