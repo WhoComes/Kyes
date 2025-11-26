@@ -36,6 +36,12 @@ export default function EventParticipantsPage() {
 
     const [search, setSearch] = useState("");
 
+    const [selectedPhoto, setSelectedPhoto] = useState<{
+        url: string;
+        name: string;
+    } | null>(null);
+
+
     useEffect(() => {
         async function load() {
             setLoading(true);
@@ -168,16 +174,28 @@ export default function EventParticipantsPage() {
                                     className="border rounded-md px-3 py-2 flex gap-3 items-center"
                                 >
                                     {p.photo_url ? (
-                                        <img
-                                            src={p.photo_url}
-                                            alt={`${p.first_name} ${p.last_name}`}
-                                            className="w-10 h-10 rounded-full object-cover border"
-                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setSelectedPhoto({
+                                                    url: p.photo_url!,
+                                                    name: `${p.first_name} ${p.last_name}`,
+                                                })
+                                            }
+                                            className="shrink-0"
+                                        >
+                                            <img
+                                                src={p.photo_url}
+                                                alt={`${p.first_name} ${p.last_name}`}
+                                                className="w-10 h-10 rounded-full object-cover border"
+                                            />
+                                        </button>
                                     ) : (
-                                        <div className="w-10 h-10 rounded-full border flex items-center justify-center text-xs">
+                                        <div className="w-10 h-10 rounded-full border flex items-center justify-center text-xs shrink-0">
                                             ?
                                         </div>
                                     )}
+
 
                                     <div className="flex-1 flex flex-col gap-1">
                                         <span className="font-semibold">
@@ -211,6 +229,34 @@ export default function EventParticipantsPage() {
                     {message && <p className="text-sm mt-2">{message}</p>}
                 </section>
             </div>
+            {selectedPhoto && (
+                <div
+                    className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+                    onClick={() => setSelectedPhoto(null)}
+                >
+                    <div
+                        className="max-w-sm w-[90%] bg-white rounded-xl p-4"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <img
+                            src={selectedPhoto.url}
+                            alt={selectedPhoto.name}
+                            className="w-full h-auto rounded-lg"
+                        />
+                        <p className="mt-2 text-center text-sm font-medium">
+                            {selectedPhoto.name}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => setSelectedPhoto(null)}
+                            className="mt-3 w-full border rounded-md px-3 py-2 text-sm"
+                        >
+                            Fermer
+                        </button>
+                    </div>
+                </div>
+            )}
+
         </main>
     );
 }

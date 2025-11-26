@@ -144,16 +144,21 @@ export default function InvitePage() {
         try {
             let photoUrl: string | null = null;
 
-            // 1) Si une photo est choisie, on l'upload dans Supabase Storage
+            // 1) Si une photo est choisie, on l'upload dans Supabase Storage telle quelle
             if (photoFile) {
                 setPhotoUploading(true);
-                const fileExt = photoFile.name.split(".").pop() || "jpg";
+
+                const fileExt =
+                    photoFile.name.split(".").pop() || "jpg";
                 const fileName = `${token}-${Date.now()}.${fileExt}`;
                 const filePath = `participants/${fileName}`;
 
-                const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from("participant-photos")
-                    .upload(filePath, photoFile);
+                const { data: uploadData, error: uploadError } =
+                    await supabase.storage
+                        .from("participant-photos")
+                        .upload(filePath, photoFile, {
+                            contentType: photoFile.type || "image/jpeg",
+                        });
 
                 if (uploadError) {
                     console.error(uploadError);
@@ -375,9 +380,9 @@ export default function InvitePage() {
                             <button
                                 type="button"
                                 onClick={() => document.getElementById("photo-input")?.click()}
-                                className="border rounded-md px-3 py-2 text-sm font-medium w-full text-left"
+                                className="border rounded-md px-3 py-2 text-sm font-medium w-full flex items-center justify-center gap-2 bg-blue-600 text-white"
                             >
-                                {photoFile ? "Changer la photo" : "Choisir ou prendre une photo"}
+                                <span>📸 Ajouter une photo</span>
                             </button>
 
                             <input
@@ -397,19 +402,23 @@ export default function InvitePage() {
                                 className="hidden"
                             />
 
+                            <p className="text-xs text-gray-600 mt-2">
+                                Ajouter ta photo permet aux autres participants de mettre un visage sur ton
+                                nom, et tu pourras aussi voir la photo des autres. C&apos;est facultatif
+                                mais fortement recommandé.
+                            </p>
+
                             {photoPreview && (
                                 <div className="mt-3">
-                                    <p className="text-xs mb-1">Aperçu :</p>
+                                    <p className="text-xs mb-1">Aperçu de ta photo :</p>
                                     <img
                                         src={photoPreview}
                                         alt="Aperçu photo"
-                                        className="w-28 h-28 rounded-full object-cover border"
+                                        className="w-28 h-28 rounded-full object-cover border mx-auto"
                                     />
                                 </div>
                             )}
                         </div>
-
-
                         <button
                             type="submit"
                             disabled={loadingAction}
