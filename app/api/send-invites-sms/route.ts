@@ -45,14 +45,14 @@ export async function POST(request: Request) {
     for (const inv of invites) {
       const inviteLink = `${baseUrl}/invite/${inv.invite_token}`;
 
-      let text = `[Kyes] Vous êtes invité(e) à "${event.name}"`;
-      if (event.date) {
-        text += ` le ${new Date(event.date).toLocaleDateString()}`;
-      }
-      if (event.location) {
-        text += ` à ${event.location}`;
-      }
-      text += `. Répondez à l'invitation ici : ${inviteLink}`;
+      // On tronque le nom de l'événement pour éviter les SMS trop longs
+      const shortName =
+        event.name.length > 40
+          ? event.name.slice(0, 37) + "..."
+          : event.name;
+
+      const text = `[Kyes] Invitation à "${shortName}". Réponse : ${inviteLink}`;
+
 
       await client.messages.create({
         from: fromNumber,
