@@ -95,6 +95,11 @@ export async function POST(request: Request) {
         : null;
 
     // 5) Créer le participant
+    const photoUrl =
+      (body.photo_url as string | undefined) && body.photo_url !== ""
+        ? (body.photo_url as string)
+        : null;
+
     const { error: participantError } = await supabaseAdmin
       .from("participants")
       .insert([
@@ -109,8 +114,10 @@ export async function POST(request: Request) {
           relation_label: relationLabel,
           family_group: familyGroup,
           tags: null,
+          photo_url: photoUrl,
         },
       ]);
+
 
     if (participantError) {
       console.error(participantError);

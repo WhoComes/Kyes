@@ -55,8 +55,9 @@ export async function GET(request: Request) {
   const { data: participantsData, error: participantsError } = await supabaseAdmin
     .from("participants")
     .select(
-      "id, first_name, last_name, role_type, job_title, company, relation_label, family_group"
+      "id, first_name, last_name, role_type, job_title, company, relation_label, family_group, photo_url"
     )
+
     .eq("event_id", row.event_id)
     .order("last_name", { ascending: true });
 

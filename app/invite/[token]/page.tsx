@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { supabase } from "@/app/lib/supabaseClient";
 
 type InviteInfo = {
     invite: {
@@ -39,6 +40,11 @@ export default function InvitePage() {
 
     const [relationLabel, setRelationLabel] = useState("");
     const [familyGroup, setFamilyGroup] = useState("");
+
+    const [photoFile, setPhotoFile] = useState<File | null>(null);
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+    const [photoUploading, setPhotoUploading] = useState(false);
+
 
     // Charger les infos d'invitation + événement
     useEffect(() => {
@@ -136,6 +142,38 @@ export default function InvitePage() {
         setLoadingAction(true);
 
         try {
+            let photoUrl: string | null = null;
+
+            // 1) Si une photo est choisie, on l'upload dans Supabase Storage
+            if (photoFile) {
+                setPhotoUploading(true);
+                const fileExt = photoFile.name.split(".").pop() || "jpg";
+                const fileName = `${token}-${Date.now()}.${fileExt}`;
+                const filePath = `participants/${fileName}`;
+
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from("participant-photos")
+                    .upload(filePath, photoFile);
+
+                if (uploadError) {
+                    console.error(uploadError);
+                    setMessage(
+                        "Erreur lors du téléversement de la photo. Tu peux réessayer ou continuer sans photo."
+                    );
+                    setPhotoUploading(false);
+                    setLoadingAction(false);
+                    return;
+                }
+
+                const { data: publicUrlData } = supabase.storage
+                    .from("participant-photos")
+                    .getPublicUrl(uploadData.path);
+
+                photoUrl = publicUrlData.publicUrl;
+                setPhotoUploading(false);
+            }
+
+            // 2) On envoie la réponse d'invitation avec l'URL de la photo (si présente)
             const res = await fetch("/api/invite-respond", {
                 method: "POST",
                 headers: {
@@ -152,32 +190,19 @@ export default function InvitePage() {
                     relation_label:
                         info.event.type === "perso" ? relationLabel : undefined,
                     family_group: info.event.type === "perso" ? familyGroup : undefined,
+                    photo_url: photoUrl,
                 }),
             });
 
             const body = await res.json();
 
             if (!res.ok) {
-                setMessage(body.error || "Erreur lors de l'acceptation de l'invitation.");
-            } else {
-                // 🔹 Met à jour le statut localement en "accepted"
-                setInfo((prev) =>
-                    prev
-                        ? {
-                            ...prev,
-                            invite: {
-                                ...prev.invite,
-                                status: "accepted",
-                            },
-                        }
-                        : prev
-                );
-
                 setMessage(
-                    "Votre participation est enregistrée ✅ Vous pouvez maintenant consulter la liste des participants."
+                    body.error || "Erreur lors de l'acceptation de l'invitation."
                 );
+            } else {
+                setMessage("Votre participation est enregistrée ✅");
             }
-
         } catch (e) {
             console.error(e);
             setMessage("Erreur lors de l'acceptation de l'invitation.");
@@ -185,6 +210,7 @@ export default function InvitePage() {
             setLoadingAction(false);
         }
     }
+
 
     if (loading) {
         return (
@@ -343,6 +369,42 @@ export default function InvitePage() {
                                 </div>
                             </>
                         )}
+                        <div>
+                            <label className="block mb-1">
+                                Photo (optionnel, recommandé)
+                            </label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                capture="user"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0] || null;
+                                    setPhotoFile(file || null);
+                                    if (file) {
+                                        const url = URL.createObjectURL(file);
+                                        setPhotoPreview(url);
+                                    } else {
+                                        setPhotoPreview(null);
+                                    }
+                                }}
+                                className="w-full text-xs"
+                            />
+                            <p className="text-xs text-gray-600 mt-1">
+                                Tu peux prendre une photo avec ton téléphone ou en choisir une
+                                existante. Elle sera visible uniquement par les participants de
+                                cet événement.
+                            </p>
+                            {photoPreview && (
+                                <div className="mt-2">
+                                    <p className="text-xs mb-1">Aperçu :</p>
+                                    <img
+                                        src={photoPreview}
+                                        alt="Aperçu photo"
+                                        className="w-24 h-24 object-cover rounded-full border"
+                                    />
+                                </div>
+                            )}
+                        </div>
 
                         <button
                             type="submit"

@@ -20,6 +20,7 @@ type ParticipantRow = {
   company: string | null;
   relation_label: string | null;
   family_group: string | null;
+  photo_url: string | null;
 };
 
 type ApiResponse = {
@@ -161,29 +162,43 @@ export default function InviteParticipantsPage() {
               {filtered.map((p) => (
                 <li
                   key={p.id}
-                  className="border rounded-md px-3 py-2 flex flex-col gap-1"
+                  className="border rounded-md px-3 py-2 flex gap-3 items-center"
                 >
-                  <span className="font-semibold">
-                    {p.first_name} {p.last_name}
-                  </span>
-
-                  {event.type === "pro" ? (
-                    <span>
-                      {p.job_title && <>{p.job_title} · </>}
-                      {p.company}
-                    </span>
+                  {p.photo_url ? (
+                    <img
+                      src={p.photo_url}
+                      alt={`${p.first_name} ${p.last_name}`}
+                      className="w-10 h-10 rounded-full object-cover border"
+                    />
                   ) : (
-                    <>
-                      {p.relation_label && (
-                        <span>{p.relation_label}</span>
-                      )}
-                      {p.family_group && (
-                        <span className="text-xs">
-                          Groupe / famille : {p.family_group}
-                        </span>
-                      )}
-                    </>
+                    <div className="w-10 h-10 rounded-full border flex items-center justify-center text-xs">
+                      ?
+                    </div>
                   )}
+
+                  <div className="flex-1 flex flex-col gap-1">
+                    <span className="font-semibold">
+                      {p.first_name} {p.last_name}
+                    </span>
+
+                    {event.type === "pro" ? (
+                      <span>
+                        {p.job_title && <>{p.job_title} · </>}
+                        {p.company}
+                      </span>
+                    ) : (
+                      <>
+                        {p.relation_label && (
+                          <span>{p.relation_label}</span>
+                        )}
+                        {p.family_group && (
+                          <span className="text-xs">
+                            Groupe / famille : {p.family_group}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
